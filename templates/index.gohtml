@@ -1,0 +1,90 @@
+{{ define "Base" }}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Contacts</title>
+
+    </head>
+    <body>
+    <form action="/contacts" method="get" class="tool-bar">
+        <label for="search">Search Term</label>
+        <input id="search" type="search" name="q"/>
+        <input type="submit" value="Search"/>
+    </form>
+
+    <table>
+        <thead>
+        <tr>
+            <th>First</th>
+            <th>Last</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {{ range . }}
+            <tr>
+                <td>{{ .First }}</td>
+                <td>{{ .Last }}</td>
+                <td>{{ .Phone }}</td>
+                <td>{{ .Email }}</td>
+                <td><a href="/contacts/{{ .ID }}/edit">Edit</a>
+                    <a href="/contacts/{{ .ID }}">View</a></td>
+            </tr>
+        {{ end }}
+        </tbody>
+    </table>
+    <p>
+        <a href="/contacts/new">Add Contact</a>
+    </p>
+    </body>
+    </html>
+{{ end }}
+
+{{ define "NewContactPage"}}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Main Page</title>
+    </head>
+    <body>
+    <h1>Add a contact</h1>
+    {{template "NewContactForm" .}}
+    </body>
+    </html>
+{{ end }}
+
+{{ define "NewContactForm"}}
+    <form action="/contacts/new" method="post">
+        <fieldset>
+            <legend>Contact Values</legend>
+            <p>
+                <label for="email">Email</label>
+                <input name="email" id="email" type="email" placeholder="Email" >
+{{/*                <span class="error">{{ contact.errors['email'] }}</span>*/}}
+            </p>
+            <p>
+                <label for="first_name">First Name</label>
+                <input name="first_name" id="first_name" type="text" placeholder="First Name">
+{{/*                <span class="error">{{ contact.errors['first'] }}</span>*/}}
+            </p>
+            <p>
+                <label for="last_name">Last Name</label>
+                <input name="last_name" id="last_name" type="text" placeholder="Last Name">
+{{/*                <span class="error">{{ contact.errors['last'] }}</span>*/}}
+            </p>
+            <p>
+                <label for="phone">Phone</label>
+                <input name="phone" id="phone" type="text" placeholder="Phone">
+{{/*                <span class="error">{{ contact.errors['phone'] }}</span>*/}}
+            </p>
+            <button>Save</button>
+        </fieldset>
+    </form>
+
+    <p>
+        <a href="/contacts">Back</a>
+    </p>
+{{ end }}
+
