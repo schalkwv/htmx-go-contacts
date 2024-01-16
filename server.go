@@ -81,6 +81,66 @@ func getViewContactForm(c echo.Context) error {
 	return nil
 }
 
+func getEditContactForm(c echo.Context) error {
+	id := c.Param("id")
+	var contact contact
+	for _, c := range Contacts {
+		if strconv.Itoa(c.ID) == id {
+			contact = c
+			break
+		}
+	}
+
+	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "EditContactPage", contact)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
+func updateContact(c echo.Context) error {
+	id := c.Param("id")
+	var contact contact
+	for _, c := range Contacts {
+		if strconv.Itoa(c.ID) == id {
+			contact = c
+			break
+		}
+	}
+
+	err := BindAndValidate(c, &contact)
+	if err != nil {
+		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+
+		err := tmpl.ExecuteTemplate(c.Response().Writer, "EditContactPage", contact)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+	} else {
+		for i, c := range Contacts {
+			if strconv.Itoa(c.ID) == id {
+				Contacts[i] = contact
+				break
+			}
+		}
+		return c.Redirect(http.StatusMovedPermanently, "/contacts")
+	}
+	return nil
+}
+
+func deleteContact(c echo.Context) error {
+	id := c.Param("id")
+	for i, c := range Contacts {
+		if strconv.Itoa(c.ID) == id {
+			Contacts = append(Contacts[:i], Contacts[i+1:]...)
+			break
+		}
+	}
+	return c.Redirect(http.StatusMovedPermanently, "/contacts")
+}
+
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -90,6 +150,9 @@ func main() {
 	e.GET("/contacts/new", getNewContactForm)
 	e.POST("/contacts/new", createContact)
 	e.GET("/contacts/:id", getViewContactForm)
+	e.GET("/contacts/:id/edit", getEditContactForm)
+	e.POST("/contacts/:id/edit", updateContact)
+	e.POST("/contacts/:id/delete", deleteContact)
 
 	e.Validator = &Validator{validator: validator.New()}
 
