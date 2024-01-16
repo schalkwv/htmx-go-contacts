@@ -61,22 +61,22 @@
             <legend>Contact Values</legend>
             <p>
                 <label for="email">Email</label>
-                <input name="email" id="email" type="email" placeholder="Email" >
+                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}" >
 {{/*                <span class="error">{{ contact.errors['email'] }}</span>*/}}
             </p>
             <p>
                 <label for="first_name">First Name</label>
-                <input name="first_name" id="first_name" type="text" placeholder="First Name">
+                <input name="first_name" id="first_name" type="text" placeholder="First Name" value="{{ .First}}">
 {{/*                <span class="error">{{ contact.errors['first'] }}</span>*/}}
             </p>
             <p>
                 <label for="last_name">Last Name</label>
-                <input name="last_name" id="last_name" type="text" placeholder="Last Name">
+                <input name="last_name" id="last_name" type="text" placeholder="Last Name" value="{{ .Last }}">
 {{/*                <span class="error">{{ contact.errors['last'] }}</span>*/}}
             </p>
             <p>
                 <label for="phone">Phone</label>
-                <input name="phone" id="phone" type="text" placeholder="Phone">
+                <input name="phone" id="phone" type="text" placeholder="Phone" value="{{.Phone}}">
 {{/*                <span class="error">{{ contact.errors['phone'] }}</span>*/}}
             </p>
             <button>Save</button>
@@ -87,4 +87,31 @@
         <a href="/contacts">Back</a>
     </p>
 {{ end }}
+
+{{ define "ViewContactPage"}}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>View Contact</title>
+    </head>
+    <body>
+    {{template "ViewContactForm" .}}
+    </body>
+    </html>
+{{ end }}
+
+{{ define "ViewContactForm"}}
+    <h1>{{.First}} {{.Last}}</h1>
+
+    <div>
+        <div>Phone: {{.Phone}}</div>
+        <div>Email: {{.Email}}</div>
+    </div>
+
+    <p>
+        <a href="/contacts/{{.ID}}/edit">Edit</a>
+        <a href="/contacts">Back</a>
+    </p>
+{{ end }}
+
 
