@@ -152,9 +152,18 @@
         </fieldset>
     </form>
 
-    <form action="/contacts/{{ .ID }}/delete" method="post">
-        <button>Delete Contact</button>
-    </form>
+        <button
+                hx-delete="/contacts/{{ .ID }}"
+                hx-target="body"
+                hx-push-url="true"
+                hx-confirm="Are you sure you want to delete this contact?"
+        >
+            Delete The Contact
+        </button>
+
+{{/*    <form action="/contacts/{{ .ID }}/delete" method="post">*/}}
+{{/*        <button>Delete Contact</button>*/}}
+{{/*    </form>*/}}
 
     <p>
         <a href="/contacts">Back</a>

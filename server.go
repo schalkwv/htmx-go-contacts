@@ -138,7 +138,7 @@ func deleteContact(c echo.Context) error {
 			break
 		}
 	}
-	return c.Redirect(http.StatusMovedPermanently, "/contacts")
+	return c.Redirect(http.StatusSeeOther, "/contacts")
 }
 
 func getContactList(c echo.Context) error {
@@ -163,7 +163,8 @@ func main() {
 	e.GET("/contacts/:id", getViewContactForm)
 	e.GET("/contacts/:id/edit", getEditContactForm)
 	e.POST("/contacts/:id/edit", updateContact)
-	e.POST("/contacts/:id/delete", deleteContact)
+	// e.POST("/contacts/:id/delete", deleteContact)
+	e.DELETE("/contacts/:id", deleteContact)
 
 	e.Validator = &Validator{validator: validator.New()}
 
