@@ -8,11 +8,11 @@ import (
 )
 
 type contact struct {
-	ID    int    `json:"id"`
-	First string `json:"first"`
-	Last  string `json:"last"`
-	Phone string `json:"phone"`
-	Email string `json:"email"`
+	ID    int    `json:"id" form:"ID"`
+	First string `json:"first" form:"first_name"`
+	Last  string `json:"last" form:"last_name"`
+	Phone string `json:"phone" form:"phone"`
+	Email string `json:"email" form:"email"`
 }
 
 var Contacts []contact
@@ -43,10 +43,23 @@ func getNewContactForm(c echo.Context) error {
 	return nil
 }
 
+func createContact(c echo.Context) error {
+	var newContact contact
+	err := c.Bind(&newContact)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	Contacts = append(Contacts, newContact)
+	return c.Redirect(http.StatusMovedPermanently, "/contacts")
+}
+
 func main() {
 	e := echo.New()
-	e.GET("/", getContacts)
+	e.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/contacts")
+	})
 	e.GET("/contacts", getContacts)
 	e.GET("/contacts/new", getNewContactForm)
+	e.POST("/contacts/new", createContact)
 	e.Logger.Fatal(e.Start(":1323"))
 }
