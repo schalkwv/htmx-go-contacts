@@ -141,12 +141,23 @@ func deleteContact(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/contacts")
 }
 
+func getContactList(c echo.Context) error {
+	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "ContactList", Contacts)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/contacts")
 	})
 	e.GET("/contacts", getContacts)
+	e.GET("/contactlist", getContactList)
 	e.GET("/contacts/new", getNewContactForm)
 	e.POST("/contacts/new", createContact)
 	e.GET("/contacts/:id", getViewContactForm)

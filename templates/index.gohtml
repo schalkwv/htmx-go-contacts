@@ -1,11 +1,23 @@
-{{ define "Base" }}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Contacts</title>
+{{ define "header"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contacts</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"
+            integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h"
+            crossorigin="anonymous"></script>
+</head>
+<body hx-boost="true">
+{{ end }}
 
-    </head>
-    <body>
+{{ define "footer"}}
+</body>
+</html>
+{{ end }}
+
+{{ define "Base" }}
+    {{template "header"}}
+
     <form action="/contacts" method="get" class="tool-bar">
         <label for="search">Search Term</label>
         <input id="search" type="search" name="q"/>
@@ -38,21 +50,22 @@
     <p>
         <a href="/contacts/new">Add Contact</a>
     </p>
-    </body>
-    </html>
+    <div id="main">
+
+        <button hx-get="/contactlist" hx-target="#main" hx-swap="outerHTML"
+                hx-trigger="click, keyup[ctrlKey && key == 'z'] from:body" hx-push-url="true">
+            Get The Contacts
+        </button>
+
+    </div>
+    {{template "footer"}}
 {{ end }}
 
 {{ define "NewContactPage"}}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Main Page</title>
-    </head>
-    <body>
+    {{ template "header"}}
     <h1>Add a contact</h1>
     {{template "NewContactForm" .}}
-    </body>
-    </html>
+    {{template "footer"}}
 {{ end }}
 
 {{ define "NewContactForm"}}
@@ -61,23 +74,23 @@
             <legend>Contact Values</legend>
             <p>
                 <label for="email">Email</label>
-                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}" >
-{{/*                <span class="error">{{ contact.errors['email'] }}</span>*/}}
+                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}">
+                {{/*                <span class="error">{{ contact.errors['email'] }}</span>*/}}
             </p>
             <p>
                 <label for="first_name">First Name</label>
                 <input name="first_name" id="first_name" type="text" placeholder="First Name" value="{{ .First}}">
-{{/*                <span class="error">{{ contact.errors['first'] }}</span>*/}}
+                {{/*                <span class="error">{{ contact.errors['first'] }}</span>*/}}
             </p>
             <p>
                 <label for="last_name">Last Name</label>
                 <input name="last_name" id="last_name" type="text" placeholder="Last Name" value="{{ .Last }}">
-{{/*                <span class="error">{{ contact.errors['last'] }}</span>*/}}
+                {{/*                <span class="error">{{ contact.errors['last'] }}</span>*/}}
             </p>
             <p>
                 <label for="phone">Phone</label>
                 <input name="phone" id="phone" type="text" placeholder="Phone" value="{{.Phone}}">
-{{/*                <span class="error">{{ contact.errors['phone'] }}</span>*/}}
+                {{/*                <span class="error">{{ contact.errors['phone'] }}</span>*/}}
             </p>
             <button>Save</button>
         </fieldset>
@@ -89,15 +102,9 @@
 {{ end }}
 
 {{ define "ViewContactPage"}}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>View Contact</title>
-    </head>
-    <body>
+    {{ template "header"}}
     {{template "ViewContactForm" .}}
-    </body>
-    </html>
+    {{template "footer"}}
 {{ end }}
 
 {{ define "ViewContactForm"}}
@@ -116,15 +123,9 @@
 
 
 {{ define "EditContactPage"}}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>View Contact</title>
-    </head>
-    <body>
+    {{ template "header"}}
     {{template "EditContactForm" .}}
-    </body>
-    </html>
+    {{template "footer"}}
 {{ end }}
 
 {{ define "EditContactForm"}}
@@ -133,7 +134,7 @@
             <legend>Contact Values</legend>
             <p>
                 <label for="email">Email</label>
-                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}" >
+                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}">
             </p>
             <p>
                 <label for="first_name">First Name</label>
@@ -158,4 +159,12 @@
     <p>
         <a href="/contacts">Back</a>
     </p>
+{{ end }}
+
+{{ define "ContactList"}}
+    <ul>
+        {{ range . }}
+            <li>{{ .First }} {{ .Last }}</li>
+        {{ end }}
+    </ul>
 {{ end }}
