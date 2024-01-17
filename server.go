@@ -29,20 +29,20 @@ func init() {
 	}
 }
 func getContacts(c echo.Context) error {
-	q := c.QueryParam("q")
+	search := c.QueryParam("q")
 	templateParams := struct {
 		Contacts []contact
-		Query    string
+		Search   string
 	}{
 		Contacts: Contacts,
-		Query:    q,
+		Search:   search,
 	}
 
-	if q != "" {
+	if search != "" {
 		var filteredContacts []contact
 		for _, c := range Contacts {
 
-			if strings.Contains(c.First, q) || strings.Contains(c.Last, q) || strings.Contains(c.Phone, q) || strings.Contains(c.Email, q) {
+			if strings.Contains(c.First, search) || strings.Contains(c.Last, search) || strings.Contains(c.Phone, search) || strings.Contains(c.Email, search) {
 				filteredContacts = append(filteredContacts, c)
 			}
 		}
