@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -28,6 +29,23 @@ func init() {
 	}
 }
 func getContacts(c echo.Context) error {
+	q := c.QueryParam("q")
+	if q != "" {
+		var filteredContacts []contact
+		for _, c := range Contacts {
+
+			if strings.Contains(c.First, q) || strings.Contains(c.Last, q) || strings.Contains(c.Phone, q) || strings.Contains(c.Email, q) {
+				filteredContacts = append(filteredContacts, c)
+			}
+		}
+		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+
+		err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", filteredContacts)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+		return nil
+	}
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", Contacts)
