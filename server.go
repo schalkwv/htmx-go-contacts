@@ -1,20 +1,22 @@
 package main
 
 import (
+	"errors"
 	"html/template"
 	"net/http"
 	"strconv"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 type contact struct {
-	ID    int    `json:"id" form:"ID"`
-	First string `json:"first" form:"first_name" validate:"required"`
-	Last  string `json:"last" form:"last_name" validate:"required"`
-	Phone string `json:"phone" form:"phone" validate:"required"`
-	Email string `json:"email" form:"email" validate:"required"`
+	ID     int    `json:"id" form:"ID"`
+	First  string `json:"first" form:"first_name" validate:"required"`
+	Last   string `json:"last" form:"last_name" validate:"required"`
+	Phone  string `json:"phone" form:"phone" validate:"required"`
+	Email  string `json:"email" form:"email" validate:"required"`
+	Errors map[string]string
 }
 
 var Contacts []contact
@@ -49,6 +51,14 @@ func createContact(c echo.Context) error {
 	var newContact contact
 	err := BindAndValidate(c, &newContact)
 	if err != nil {
+		var validationErrors validator.ValidationErrors
+		errors.As(err, &validationErrors)
+
+		newContact.Errors = make(map[string]string)
+		for _, e := range validationErrors {
+			newContact.Errors[e.Field()] = e.Tag()
+		}
+
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "NewContactPage", newContact)
@@ -125,7 +135,9 @@ func updateContact(c echo.Context) error {
 				break
 			}
 		}
-		return c.Redirect(http.StatusMovedPermanently, "/contacts")
+		// redirect to contact view page
+		return c.Redirect(http.StatusMovedPermanently, "/contacts/"+id)
+		// return c.Redirect(http.StatusMovedPermanently, "/contacts")
 	}
 	return nil
 }
@@ -166,7 +178,7 @@ func main() {
 	// e.POST("/contacts/:id/delete", deleteContact)
 	e.DELETE("/contacts/:id", deleteContact)
 
-	e.Validator = &Validator{validator: validator.New()}
+	e.Validator = &Validator{validator: validator.New(validator.WithRequiredStructEnabled())}
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

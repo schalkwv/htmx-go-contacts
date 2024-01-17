@@ -6,6 +6,9 @@
     <script src="https://unpkg.com/htmx.org@1.9.2"
             integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h"
             crossorigin="anonymous"></script>
+    <style type="text/css">.error {
+            color: red;
+        }</style>
 </head>
 <body hx-boost="true">
 {{ end }}
@@ -75,22 +78,41 @@
             <p>
                 <label for="email">Email</label>
                 <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}">
-                {{/*                <span class="error">{{ contact.errors['email'] }}</span>*/}}
+                {{ with .Errors.Email }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
+            {{/*            <p>*/}}
+            {{/*                <label for="email">Email</label>*/}}
+            {{/*                <input name="email" id="email" type="email"*/}}
+            {{/*                       hx-get="/contacts/{{ .ID }}/email"*/}}
+            {{/*                       hx-target="next .error"*/}}
+            {{/*                       placeholder="Email" value="{{ .Email }}">*/}}
+            {{/*                {{ with .Errors.Email }}*/}}
+            {{/*                    <span class="error">{{ . }}</span>*/}}
+            {{/*                {{ end }}*/}}
+            {{/*            </p>*/}}
             <p>
                 <label for="first_name">First Name</label>
                 <input name="first_name" id="first_name" type="text" placeholder="First Name" value="{{ .First}}">
-                {{/*                <span class="error">{{ contact.errors['first'] }}</span>*/}}
+                {{ with .Errors.First }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
+            </p>
             </p>
             <p>
                 <label for="last_name">Last Name</label>
                 <input name="last_name" id="last_name" type="text" placeholder="Last Name" value="{{ .Last }}">
-                {{/*                <span class="error">{{ contact.errors['last'] }}</span>*/}}
+                {{ with .Errors.Last }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
             <p>
                 <label for="phone">Phone</label>
                 <input name="phone" id="phone" type="text" placeholder="Phone" value="{{.Phone}}">
-                {{/*                <span class="error">{{ contact.errors['phone'] }}</span>*/}}
+                {{ with .Errors.Phone }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
             <button>Save</button>
         </fieldset>
@@ -152,18 +174,18 @@
         </fieldset>
     </form>
 
-        <button
-                hx-delete="/contacts/{{ .ID }}"
-                hx-target="body"
-                hx-push-url="true"
-                hx-confirm="Are you sure you want to delete this contact?"
-        >
-            Delete The Contact
-        </button>
+    <button
+            hx-delete="/contacts/{{ .ID }}"
+            hx-target="body"
+            hx-push-url="true"
+            hx-confirm="Are you sure you want to delete this contact?"
+    >
+        Delete The Contact
+    </button>
 
-{{/*    <form action="/contacts/{{ .ID }}/delete" method="post">*/}}
-{{/*        <button>Delete Contact</button>*/}}
-{{/*    </form>*/}}
+    {{/*    <form action="/contacts/{{ .ID }}/delete" method="post">*/}}
+    {{/*        <button>Delete Contact</button>*/}}
+    {{/*    </form>*/}}
 
     <p>
         <a href="/contacts">Back</a>
