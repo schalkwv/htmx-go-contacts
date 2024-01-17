@@ -30,6 +30,14 @@ func init() {
 }
 func getContacts(c echo.Context) error {
 	q := c.QueryParam("q")
+	templateParams := struct {
+		Contacts []contact
+		Query    string
+	}{
+		Contacts: Contacts,
+		Query:    q,
+	}
+
 	if q != "" {
 		var filteredContacts []contact
 		for _, c := range Contacts {
@@ -38,9 +46,11 @@ func getContacts(c echo.Context) error {
 				filteredContacts = append(filteredContacts, c)
 			}
 		}
+		templateParams.Contacts = filteredContacts
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+		// tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
-		err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", filteredContacts)
+		err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
 		}
@@ -48,7 +58,7 @@ func getContacts(c echo.Context) error {
 	}
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
-	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", Contacts)
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
