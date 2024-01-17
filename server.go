@@ -50,6 +50,17 @@ func getContacts(c echo.Context) error {
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 		// tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
+		// check if headers contain HX-Trigger with value "search"
+		// if yes, return only the contact list
+		// if no, return the whole page
+		if c.Request().Header.Get("HX-Trigger") == "search" {
+			err := tmpl.ExecuteTemplate(c.Response().Writer, "ContactRows", templateParams)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, err.Error())
+			}
+			return nil
+		}
+
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
