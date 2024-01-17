@@ -82,16 +82,8 @@
                     <span class="error">{{ . }}</span>
                 {{ end }}
             </p>
-            {{/*            <p>*/}}
-            {{/*                <label for="email">Email</label>*/}}
-            {{/*                <input name="email" id="email" type="email"*/}}
-            {{/*                       hx-get="/contacts/{{ .ID }}/email"*/}}
-            {{/*                       hx-target="next .error"*/}}
-            {{/*                       placeholder="Email" value="{{ .Email }}">*/}}
-            {{/*                {{ with .Errors.Email }}*/}}
-            {{/*                    <span class="error">{{ . }}</span>*/}}
-            {{/*                {{ end }}*/}}
-            {{/*            </p>*/}}
+
+
             <p>
                 <label for="first_name">First Name</label>
                 <input name="first_name" id="first_name" type="text" placeholder="First Name" value="{{ .First}}">
@@ -99,7 +91,7 @@
                     <span class="error">{{ . }}</span>
                 {{ end }}
             </p>
-            </p>
+
             <p>
                 <label for="last_name">Last Name</label>
                 <input name="last_name" id="last_name" type="text" placeholder="Last Name" value="{{ .Last }}">
@@ -107,6 +99,7 @@
                     <span class="error">{{ . }}</span>
                 {{ end }}
             </p>
+
             <p>
                 <label for="phone">Phone</label>
                 <input name="phone" id="phone" type="text" placeholder="Phone" value="{{.Phone}}">
@@ -153,22 +146,38 @@
 {{ define "EditContactForm"}}
     <form action="/contacts/{{.ID}}/edit" method="post">
         <fieldset>
-            <legend>Contact Values</legend>
+            <legend>Edit Contact</legend>
             <p>
                 <label for="email">Email</label>
-                <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}">
+                <input name="email" id="email" type="text"
+                       hx-get="/contacts/{{ .ID }}/email"
+                       hx-trigger="change, keyup"
+                       hx-target="next .error"
+                       placeholder="Email"
+                       value="{{ .Email }}">
+                    <span class="error">{{ .Errors.Email }}</span>
             </p>
+
             <p>
                 <label for="first_name">First Name</label>
                 <input name="first_name" id="first_name" type="text" placeholder="First Name" value="{{ .First}}">
+                {{ with .Errors.First }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
             <p>
                 <label for="last_name">Last Name</label>
                 <input name="last_name" id="last_name" type="text" placeholder="Last Name" value="{{ .Last }}">
+                {{ with .Errors.Last }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
             <p>
                 <label for="phone">Phone</label>
                 <input name="phone" id="phone" type="text" placeholder="Phone" value="{{.Phone}}">
+                {{ with .Errors.Phone }}
+                    <span class="error">{{ . }}</span>
+                {{ end }}
             </p>
             <button>Save</button>
         </fieldset>

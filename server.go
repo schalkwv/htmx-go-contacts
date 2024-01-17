@@ -15,7 +15,7 @@ type contact struct {
 	First  string `json:"first" form:"first_name" validate:"required"`
 	Last   string `json:"last" form:"last_name" validate:"required"`
 	Phone  string `json:"phone" form:"phone" validate:"required"`
-	Email  string `json:"email" form:"email" validate:"required"`
+	Email  string `json:"email" form:"email" validate:"required,email"`
 	Errors map[string]string
 }
 
@@ -122,6 +122,13 @@ func updateContact(c echo.Context) error {
 
 	err := BindAndValidate(c, &contact)
 	if err != nil {
+		var validationErrors validator.ValidationErrors
+		errors.As(err, &validationErrors)
+
+		contact.Errors = make(map[string]string)
+		for _, e := range validationErrors {
+			contact.Errors[e.Field()] = e.Tag()
+		}
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "EditContactPage", contact)
@@ -163,6 +170,19 @@ func getContactList(c echo.Context) error {
 	return nil
 }
 
+func validateEmail(c echo.Context) error {
+	id := c.Param("id")
+	email := c.QueryParam("email")
+	// check if email is unique
+	for _, c1 := range Contacts {
+		if c1.Email == email && strconv.Itoa(c1.ID) != id {
+			return c.HTML(http.StatusOK, "email already exists")
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -177,6 +197,7 @@ func main() {
 	e.POST("/contacts/:id/edit", updateContact)
 	// e.POST("/contacts/:id/delete", deleteContact)
 	e.DELETE("/contacts/:id", deleteContact)
+	e.GET("/contacts/:id/email", validateEmail)
 
 	e.Validator = &Validator{validator: validator.New(validator.WithRequiredStructEnabled())}
 
