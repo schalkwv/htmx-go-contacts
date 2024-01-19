@@ -50,7 +50,11 @@
         </tbody>
     </table>
     <p>
-        <a href="/contacts/new">Add Contact</a><span>({{ .Count }} total Contacts)</span>
+        <a href="/contacts/new">Add Contact</a>
+{{/*        <span hx-get="/contacts/count" hx-trigger="load"></span>*/}}
+        <span hx-get="/contacts/count" hx-trigger="revealed">
+  <img id="spinner" class="htmx-indicator" src="/static/img/spinning-circles.svg"/>
+</span>
     </p>
     <div id="main">
 
@@ -71,7 +75,11 @@
             <td>{{ .Phone }}</td>
             <td>{{ .Email }}</td>
             <td><a href="/contacts/{{ .ID }}/edit">Edit</a>
-                <a href="/contacts/{{ .ID }}">View</a></td>
+                <a href="/contacts/{{ .ID }}">View</a>
+                <a href="#" hx-delete="/contacts/{{ .ID }}"
+                   hx-confirm="Are you sure you want to delete this contact?"
+                   hx-target="body">Delete</a>
+            </td>
         </tr>
     {{ end }}
 

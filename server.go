@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"html/template"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -24,10 +26,21 @@ type contact struct {
 var Contacts []contact
 
 func init() {
-	Contacts = []contact{
-		contact{ID: 1, First: "John", Last: "Doe", Phone: "555-555-5555", Email: "john@mail.com"},
-		contact{ID: 2, First: "Jane", Last: "Doe", Phone: "555-555-5555", Email: "jane@mail.com"},
+
+	// read contacts from contacts.json
+	file, err := os.Open("contacts.json")
+	if err != nil {
+		panic(err)
 	}
+	defer file.Close()
+
+	// decode json to contacts
+	json.NewDecoder(file).Decode(&Contacts)
+
+	// Contacts = []contact{
+	// 	contact{ID: 1, First: "John", Last: "Doe", Phone: "555-555-5555", Email: "john@mail.com"},
+	// 	contact{ID: 2, First: "Jane", Last: "Doe", Phone: "555-555-5555", Email: "jane@mail.com"},
+	// }
 }
 
 func countContacts([]contact) int {
@@ -56,7 +69,7 @@ func getContacts(c echo.Context) error {
 			}
 		}
 		templateParams.Contacts = filteredContacts
-		templateParams.Count = countContacts(filteredContacts)
+		// templateParams.Count = countContacts(filteredContacts)
 
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 		// tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
@@ -78,7 +91,7 @@ func getContacts(c echo.Context) error {
 		return nil
 	}
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
-	templateParams.Count = countContacts(Contacts)
+	// templateParams.Count = countContacts(Contacts)
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -234,6 +247,13 @@ func validateEmail(c echo.Context) error {
 	return nil
 }
 
+func getContactCount(c echo.Context) error {
+	count := countContacts(Contacts)
+	writer := c.Response().Writer
+	writer.Write([]byte(strconv.Itoa(count)))
+	return nil
+}
+
 func main() {
 	e := echo.New()
 	e.Static("/static", "static")
@@ -241,6 +261,7 @@ func main() {
 		return c.Redirect(http.StatusMovedPermanently, "/contacts")
 	})
 	e.GET("/contacts", getContacts)
+	e.GET("/contacts/count", getContactCount)
 	e.GET("/contactlist", getContactList)
 	e.GET("/contacts/new", getNewContactForm)
 	e.POST("/contacts/new", createContact)
