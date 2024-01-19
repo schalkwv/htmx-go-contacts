@@ -28,7 +28,10 @@
                hx-trigger="search, keyup delay:200ms changed"
                hx-target="tbody"
                hx-select="tbody tr"
+               hx-push-url="true"
+               hx-indicator="#spinner"
         />
+        <img id="spinner" class="htmx-indicator" src="/static/img/spinning-circles.svg" alt="Request In Flight..."/>
         <input type="submit" value="Search"/>
     </form>
 
@@ -47,7 +50,7 @@
         </tbody>
     </table>
     <p>
-        <a href="/contacts/new">Add Contact</a>
+        <a href="/contacts/new">Add Contact</a><span>({{ .Count }} total Contacts)</span>
     </p>
     <div id="main">
 

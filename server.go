@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -28,11 +29,19 @@ func init() {
 		contact{ID: 2, First: "Jane", Last: "Doe", Phone: "555-555-5555", Email: "jane@mail.com"},
 	}
 }
+
+func countContacts([]contact) int {
+	time.Sleep(2 * time.Second)
+	return len(Contacts)
+}
+
 func getContacts(c echo.Context) error {
+	time.Sleep(1 * time.Second)
 	search := c.QueryParam("q")
 	templateParams := struct {
 		Contacts []contact
 		Search   string
+		Count    int
 	}{
 		Contacts: Contacts,
 		Search:   search,
@@ -47,6 +56,8 @@ func getContacts(c echo.Context) error {
 			}
 		}
 		templateParams.Contacts = filteredContacts
+		templateParams.Count = countContacts(filteredContacts)
+
 		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 		// tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
@@ -60,7 +71,6 @@ func getContacts(c echo.Context) error {
 			}
 			return nil
 		}
-
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
@@ -68,7 +78,7 @@ func getContacts(c echo.Context) error {
 		return nil
 	}
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
-
+	templateParams.Count = countContacts(Contacts)
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -91,7 +101,9 @@ func createContact(c echo.Context) error {
 	err := BindAndValidate(c, &newContact)
 	if err != nil {
 		var validationErrors validator.ValidationErrors
-		errors.As(err, &validationErrors)
+		if !errors.As(err, &validationErrors) {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
 
 		newContact.Errors = make(map[string]string)
 		for _, e := range validationErrors {
@@ -224,6 +236,7 @@ func validateEmail(c echo.Context) error {
 
 func main() {
 	e := echo.New()
+	e.Static("/static", "static")
 	e.GET("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/contacts")
 	})
