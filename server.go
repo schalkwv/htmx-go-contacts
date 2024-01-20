@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -49,12 +50,11 @@ func countContacts([]contact) int {
 }
 
 func getContacts(c echo.Context) error {
-	time.Sleep(1 * time.Second)
+	// time.Sleep(1 * time.Second)
 	search := c.QueryParam("q")
 	templateParams := struct {
 		Contacts []contact
 		Search   string
-		Count    int
 	}{
 		Contacts: Contacts,
 		Search:   search,
@@ -91,7 +91,6 @@ func getContacts(c echo.Context) error {
 		return nil
 	}
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
-	// templateParams.Count = countContacts(Contacts)
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -221,7 +220,10 @@ func deleteContact(c echo.Context) error {
 			break
 		}
 	}
-	return c.Redirect(http.StatusSeeOther, "/contacts")
+	if c.Request().Header.Get("HX-Trigger") == "delete-btn" {
+		return c.Redirect(http.StatusSeeOther, "/contacts")
+	}
+	return nil
 }
 
 func getContactList(c echo.Context) error {
@@ -254,6 +256,91 @@ func getContactCount(c echo.Context) error {
 	return nil
 }
 
+type selectedContactIDs struct {
+	SelectedContactIDs []int `form:"selected_contact_ids"`
+}
+
+func deleteContacts(c echo.Context) error {
+
+	payload := new(selectedContactIDs)
+	if err := c.Bind(payload); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid payload")
+	}
+	// delete contacts with selected_contact_ids
+	for _, id := range payload.SelectedContactIDs {
+		for i, c := range Contacts {
+			if c.ID == id {
+				Contacts = append(Contacts[:i], Contacts[i+1:]...)
+				break
+			}
+		}
+	}
+
+	// // Parse the form data
+	// if err := c.Request().ParseForm(); err != nil {
+	// 	return echo.NewHTTPError(http.StatusBadRequest, "Invalid form data")
+	// }
+	//
+	// // Retrieve the selected contact IDs as a slice of strings
+	// formValues := c.Request().Form
+	// selectedContactIDs := formValues["selected_contact_ids"]
+	//
+	// // Initialize a slice to hold the converted integers
+	// contactIDs := make([]int, 0, len(selectedContactIDs))
+	//
+	// // Convert each string to an integer
+	// for _, idStr := range selectedContactIDs {
+	// 	id, err := strconv.Atoi(idStr)
+	// 	if err != nil {
+	// 		// Handle the error as per your application's requirements
+	// 		// For example, log the error and continue, or return a HTTP error
+	// 		continue
+	// 	}
+	// 	contactIDs = append(contactIDs, id)
+	// }
+	// // // delete contacts with selected_contact_ids
+	// for _, id := range selectedContactIDs {
+	// 	for i, c := range Contacts {
+	// 		if strconv.Itoa(c.ID) == id {
+	// 			Contacts = append(Contacts[:i], Contacts[i+1:]...)
+	// 			break
+	// 		}
+	// 	}
+	// }
+	templateParams := struct {
+		Contacts []contact
+		Search   string
+	}{
+		Contacts: Contacts,
+		Search:   "",
+	}
+
+	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
+type examPayload struct {
+	IDs []int `form:"ids"`
+}
+
+func createExam(c echo.Context) error {
+	payload := new(examPayload)
+	err := c.Bind(payload)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	if len(payload.IDs) == 0 {
+		return echo.ErrBadRequest
+	}
+
+	fmt.Println(payload.IDs)
+	return nil
+}
 func main() {
 	e := echo.New()
 	e.Static("/static", "static")
@@ -261,6 +348,7 @@ func main() {
 		return c.Redirect(http.StatusMovedPermanently, "/contacts")
 	})
 	e.GET("/contacts", getContacts)
+	e.POST("/deletecontacts", deleteContacts)
 	e.GET("/contacts/count", getContactCount)
 	e.GET("/contactlist", getContactList)
 	e.GET("/contacts/new", getNewContactForm)
@@ -271,6 +359,8 @@ func main() {
 	// e.POST("/contacts/:id/delete", deleteContact)
 	e.DELETE("/contacts/:id", deleteContact)
 	e.GET("/contacts/:id/email", validateEmail)
+	e.POST("/exams", createExam)
+	e.DELETE("/exams", createExam)
 
 	e.Validator = &Validator{validator: validator.New(validator.WithRequiredStructEnabled())}
 
