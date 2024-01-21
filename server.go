@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -43,7 +44,9 @@ func init() {
 	// 	contact{ID: 2, First: "Jane", Last: "Doe", Phone: "555-555-5555", Email: "jane@mail.com"},
 	// }
 }
-
+func getTemplate() *template.Template {
+	return template.Must(template.New("").Funcs(sprig.FuncMap()).ParseGlob("templates/*.gohtml"))
+}
 func countContacts([]contact) int {
 	time.Sleep(2 * time.Second)
 	return len(Contacts)
@@ -90,8 +93,10 @@ func getContacts(c echo.Context) error {
 		}
 		return nil
 	}
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
-	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
+	archive := new(ArchivePayload)
+	archive.Status = "Waiting"
+	tmpl := getTemplate()
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", map[string]interface{}{"Archive": archive, "Contacts": templateParams.Contacts, "Search": templateParams.Search})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -315,8 +320,10 @@ func deleteContacts(c echo.Context) error {
 		Search:   "",
 	}
 
+	archive := new(ArchivePayload)
+	archive.Status = "Waiting"
 	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
-	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", templateParams)
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", map[string]interface{}{"Archive": archive, "Contacts": templateParams.Contacts, "Search": templateParams.Search})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -341,6 +348,47 @@ func createExam(c echo.Context) error {
 	fmt.Println(payload.IDs)
 	return nil
 }
+
+type ArchivePayload struct {
+	Status   string  `json:"status"`
+	Progress float64 `json:"progress"`
+}
+
+func archiveContacts(c echo.Context) error {
+	archive := new(ArchivePayload)
+	archive.Status = "Running"
+	archive.Progress = 0
+	tmpl := getTemplate()
+	err := tmpl.ExecuteTemplate(c.Response().Writer, "Archiver", archive)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
+func archiveStatus(c echo.Context) error {
+	currentString := c.Param("current")
+	current, err := strconv.ParseFloat(currentString, 64)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	archive := new(ArchivePayload)
+	archive.Status = "Running"
+	archive.Progress = current + 0.25
+	if archive.Progress > 1 {
+		archive.Status = "Waiting"
+		archive.Progress = 1
+	}
+	tmpl := getTemplate()
+	err = tmpl.ExecuteTemplate(c.Response().Writer, "Archiver", archive)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
 func main() {
 	e := echo.New()
 	e.Static("/static", "static")
@@ -359,6 +407,10 @@ func main() {
 	// e.POST("/contacts/:id/delete", deleteContact)
 	e.DELETE("/contacts/:id", deleteContact)
 	e.GET("/contacts/:id/email", validateEmail)
+
+	e.POST("/contacts/archive", archiveContacts)
+	e.GET("/contacts/archive/:current", archiveStatus)
+
 	e.POST("/exams", createExam)
 	e.DELETE("/exams", createExam)
 
