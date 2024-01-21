@@ -86,7 +86,7 @@
             {{end}}
         </div>
         <button>Submit</button>
-        <button hx-post="/exams">
+        <button hx-delete="/exams">
             Delete Selected Contacts
         </button>
     </form>
@@ -256,4 +256,11 @@
             <li>{{ .First }} {{ .Last }}</li>
         {{ end }}
     </ul>
+{{ end }}
+
+{{ define "Archiver"}}
+<div id="archive-ui"
+     hx-target="this"
+     hx-swap="outerHTML">
+</div>
 {{ end }}
