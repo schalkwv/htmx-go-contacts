@@ -75,7 +75,7 @@ func getContacts(c echo.Context) error {
 		templateParams.Contacts = filteredContacts
 		// templateParams.Count = countContacts(filteredContacts)
 
-		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+		tmpl := getTemplate()
 		// tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
 
 		// check if headers contain HX-Trigger with value "search"
@@ -105,7 +105,7 @@ func getContacts(c echo.Context) error {
 }
 
 func getNewContactForm(c echo.Context) error {
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	tmpl := getTemplate()
 
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "NewContactPage", nil)
 	if err != nil {
@@ -128,7 +128,7 @@ func createContact(c echo.Context) error {
 			newContact.Errors[e.Field()] = e.Tag()
 		}
 
-		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+		tmpl := getTemplate()
 
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "NewContactPage", newContact)
 		if err != nil {
@@ -151,7 +151,7 @@ func getViewContactForm(c echo.Context) error {
 		}
 	}
 
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	tmpl := getTemplate()
 
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "ViewContactPage", contact)
 	if err != nil {
@@ -170,7 +170,7 @@ func getEditContactForm(c echo.Context) error {
 		}
 	}
 
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	tmpl := getTemplate()
 
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "EditContactPage", contact)
 	if err != nil {
@@ -198,7 +198,7 @@ func updateContact(c echo.Context) error {
 		for _, e := range validationErrors {
 			contact.Errors[e.Field()] = e.Tag()
 		}
-		tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+		tmpl := getTemplate()
 
 		err := tmpl.ExecuteTemplate(c.Response().Writer, "EditContactPage", contact)
 		if err != nil {
@@ -233,7 +233,7 @@ func deleteContact(c echo.Context) error {
 }
 
 func getContactList(c echo.Context) error {
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	tmpl := getTemplate()
 
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "ContactList", Contacts)
 	if err != nil {
@@ -323,7 +323,7 @@ func deleteContacts(c echo.Context) error {
 
 	archive := new(ArchivePayload)
 	archive.Status = "Waiting"
-	tmpl := template.Must(template.New("").ParseGlob("templates/*.gohtml"))
+	tmpl := getTemplate()
 	err := tmpl.ExecuteTemplate(c.Response().Writer, "Base", map[string]interface{}{"Archive": archive, "Contacts": templateParams.Contacts, "Search": templateParams.Search})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
